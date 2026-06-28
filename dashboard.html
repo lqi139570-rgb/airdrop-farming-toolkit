@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Airdrop Farming Dashboard - Wallet 0xed65</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0a0a0f; color: #e0e0e0; padding: 20px; }
+  .container { max-width: 1000px; margin: 0 auto; }
+  .header { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border-radius: 16px; padding: 30px; margin-bottom: 24px; border: 1px solid #2a2a4a; }
+  .header h1 { font-size: 24px; color: #fff; margin-bottom: 8px; }
+  .header .subtitle { color: #8888aa; font-size: 14px; }
+  .header .wallet { color: #4ecdc4; font-size: 13px; font-family: monospace; margin-top: 8px; word-break: break-all; }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
+  .card { background: #14141f; border-radius: 12px; padding: 20px; border: 1px solid #2a2a3a; }
+  .card .label { font-size: 12px; color: #6666aa; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+  .card .value { font-size: 28px; font-weight: bold; color: #fff; }
+  .card .value.green { color: #4ecdc4; }
+  .card .value.yellow { color: #ffe66d; }
+  .card .value.red { color: #ff6b6b; }
+  .card .sub { font-size: 12px; color: #666; margin-top: 4px; }
+
+  .section { background: #14141f; border-radius: 12px; padding: 24px; margin-bottom: 24px; border: 1px solid #2a2a3a; }
+  .section h2 { font-size: 18px; color: #fff; margin-bottom: 16px; }
+  .section h2 .badge { display: inline-block; background: #4ecdc4; color: #000; font-size: 11px; padding: 2px 8px; border-radius: 10px; margin-left: 8px; vertical-align: middle; }
+
+  .interactions { display: flex; flex-wrap: wrap; gap: 8px; }
+  .tag { background: #1e1e3a; color: #aaa; padding: 6px 12px; border-radius: 6px; font-size: 13px; border: 1px solid #2a2a4a; }
+  .tag.done { background: #0d2d1a; color: #4ecdc4; border-color: #1a4a2a; }
+  .tag.fail { background: #2d0d0d; color: #ff6b6b; border-color: #4a1a1a; }
+
+  .timeline { position: relative; padding-left: 24px; }
+  .timeline::before { content: ''; position: absolute; left: 8px; top: 0; bottom: 0; width: 2px; background: #2a2a4a; }
+  .event { position: relative; margin-bottom: 12px; padding-left: 16px; }
+  .event::before { content: ''; position: absolute; left: -20px; top: 6px; width: 10px; height: 10px; border-radius: 50%; background: #4ecdc4; }
+  .event .date { font-size: 11px; color: #666; }
+  .event .desc { font-size: 14px; color: #ccc; }
+
+  .step { display: flex; align-items: flex-start; gap: 16px; padding: 16px; background: #1a1a2e; border-radius: 8px; margin-bottom: 12px; border: 1px solid #2a2a4a; }
+  .step .num { width: 32px; height: 32px; border-radius: 50%; background: #4ecdc4; color: #000; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; flex-shrink: 0; }
+  .step .content { flex: 1; }
+  .step .title { font-size: 15px; color: #fff; margin-bottom: 4px; }
+  .step .detail { font-size: 13px; color: #999; line-height: 1.5; }
+  .step .url { color: #4ecdc4; text-decoration: none; font-size: 13px; }
+
+  .assets-table { width: 100%; border-collapse: collapse; }
+  .assets-table th { text-align: left; font-size: 12px; color: #6666aa; text-transform: uppercase; letter-spacing: 1px; padding: 8px 12px; border-bottom: 1px solid #2a2a3a; }
+  .assets-table td { padding: 10px 12px; font-size: 14px; border-bottom: 1px solid #1a1a2a; }
+  .assets-table tr:last-child td { border-bottom: none; }
+  .assets-table .symbol { color: #fff; font-weight: 500; }
+  .assets-table .amount { font-family: monospace; }
+  .assets-table .usd { color: #666; }
+
+  .progress-bar { height: 8px; background: #2a2a3a; border-radius: 4px; overflow: hidden; margin: 16px 0; }
+  .progress-bar .fill { height: 100%; background: linear-gradient(90deg, #4ecdc4, #44a08d); border-radius: 4px; transition: width 0.5s; }
+
+  .footer { text-align: center; color: #444; font-size: 12px; padding: 20px; }
+  .button { display: inline-block; background: #4ecdc4; color: #000; padding: 10px 24px; border-radius: 8px; text-decoration: none; font-weight: 500; font-size: 14px; margin-top: 12px; }
+  .button.outline { background: transparent; border: 1px solid #4ecdc4; color: #4ecdc4; margin-left: 8px; }
+
+  @media (max-width: 600px) { .grid { grid-template-columns: 1fr 1fr; } .header { padding: 20px; } }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>🚀 Airdrop Farming Dashboard</h1>
+    <div class="subtitle">Automated multi-protocol wallet activity system</div>
+    <div class="wallet">0xed65DE068C8bF4DC668E1a4f670BB87d4961700c · Arbitrum One</div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <div class="label">Portfolio Value</div>
+      <div class="value yellow">$1.89</div>
+      <div class="sub">Target: $50.00</div>
+    </div>
+    <div class="card">
+      <div class="label">On-chain Interactions</div>
+      <div class="value green">48</div>
+      <div class="sub">Across 3 protocols</div>
+    </div>
+    <div class="card">
+      <div class="label">Gas Spent</div>
+      <div class="value red">$9.58</div>
+      <div class="sub">All on Arbitrum</div>
+    </div>
+    <div class="card">
+      <div class="label">Farming Progress</div>
+      <div class="value green">52</div>
+      <div class="sub">Weeks programmed</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>💰 Assets <span class="badge">Arbitrum One</span></h2>
+    <table class="assets-table">
+      <tr><th>Token</th><th>Balance</th><th>Value (USD)</th><th>Status</th></tr>
+      <tr><td class="symbol">USDT</td><td class="amount">0.84</td><td class="usd">$0.84</td><td style="color:#ffe66d;">Frozen</td></tr>
+      <tr><td class="symbol">ETH</td><td class="amount">0.000678</td><td class="usd">$1.05</td><td style="color:#ff6b6b;">Low gas reserve</td></tr>
+      <tr style="border-top:2px solid #2a2a4a;"><td class="symbol" style="font-weight:bold;">Total</td><td></td><td class="usd" style="color:#fff;font-weight:bold;">$1.89</td><td></td></tr>
+    </table>
+  </div>
+
+  <div class="section">
+    <h2>🔄 Protocol Interactions</h2>
+    <div class="interactions">
+      <span class="tag done">Uniswap V3 ×6</span>
+      <span class="tag done">Aave V3 ×2</span>
+      <span class="tag fail">Camelot ×1</span>
+      <span class="tag done">Self-transfers ×39</span>
+    </div>
+    <div class="progress-bar"><div class="fill" style="width:92%"></div></div>
+    <div style="font-size:13px;color:#666;">48 of 52 weeks executed</div>
+  </div>
+
+  <div class="section">
+    <h2>📋 Active Strategy</h2>
+    
+    <div class="step">
+      <div class="num">1</div>
+      <div class="content">
+        <div class="title">Weekly On-chain Activity</div>
+        <div class="detail">Automated script rotates through swaps and transfers every week.<br>
+        <code style="color:#4ecdc4;font-size:12px;">node airdrop_farmer.js &lt;week&gt;</code></div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="num">2</div>
+      <div class="content">
+        <div class="title">ACI Testnet Airdrop <span style="color:#ff6b6b;font-size:12px;">URGENT: June 30 deadline</span></div>
+        <div class="detail">Free Sepolia testnet participation. Must be done in browser with MetaMask.<br>
+        <a class="url" href="https://aci-token.net" target="_blank">https://aci-token.net/testnet</a></div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="num">3</div>
+      <div class="content">
+        <div class="title">Free Quest Platforms</div>
+        <div class="detail">Layer3, Galxe, Zealy — free tasks that build airdrop eligibility.<br>
+        <a class="url" href="https://layer3.xyz" target="_blank">layer3.xyz</a> · 
+        <a class="url" href="https://galxe.com" target="_blank">galxe.com</a> · 
+        <a class="url" href="https://zealy.io" target="_blank">zealy.io</a></div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="num">4</div>
+      <div class="content">
+        <div class="title">Multi-protocol Coverage</div>
+        <div class="detail">Each interaction adds to wallet history. Protocols look for <strong>consistent, diverse usage</strong>. Target: 15+ unique protocols over 12 months.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>⚡ Quick Commands</h2>
+    <pre style="background:#0a0a12;padding:16px;border-radius:8px;font-size:13px;line-height:1.8;overflow-x:auto;">
+# Run weekly farming (week N = 1-52)
+<strong style="color:#4ecdc4;">cd wallet-bot && node airdrop_farmer.js 1</strong>
+
+# Check progress
+<strong style="color:#4ecdc4;">node tracker.js</strong>
+
+# View this dashboard
+<strong style="color:#4ecdc4;">start dashboard.html</strong>
+
+# Strategy guide
+<strong style="color:#4ecdc4;">cat strategy.md</strong>
+    </pre>
+  </div>
+
+  <div class="footer">
+    Generated by ZCode AI · Wallet: 0xed65DE068C8bF4DC668E1a4f670BB87d4961700c<br>
+    Dashboard updated: June 26, 2026
+  </div>
+</div>
+</body>
+</html>
